@@ -7,6 +7,7 @@ public record CreateProfesor(string Nombre, string Titulo, int Experiencia);
 public record UpdateProfesor(string? Nombre, string? Titulo, int? Experiencia);
 
 public record ListProfesor(
+    Guid Id,
     string Nombre,
     string Titulo,
     int Experiencia,

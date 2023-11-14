@@ -28,6 +28,7 @@ public class ProfesorController : ControllerBase
         }
 
         var listProfesores = profesores.Select(p => new ListProfesor(
+            p.Id,
             p.Nombre,
             p.Titulo,
             p.Experiencia,

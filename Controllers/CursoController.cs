@@ -40,10 +40,11 @@ public class CursoController : ControllerBase
         }
 
         var listCursos = cursos.Select(c => new ListCurso(
+            c.Id,
             c.Nombre,
             c.PreRequisito?.Nombre,
             c.Creditos,
-            c.Cupos - _context.CursoAlumnos.Where(ca => ca.CursoId == c.Id).Count()
+            c.Cupos - _context.CursoAlumnos.Where(ca => ca.CursoId == c.Id && ca.Estado == Estado.en_curso).Count()
         ));
 
         return CreatedAtAction(nameof(GetCursos), listCursos);

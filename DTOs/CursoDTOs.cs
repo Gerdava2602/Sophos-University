@@ -19,6 +19,7 @@ public record UpdateCurso(
     Guid? ProfesorId);
 
 public record ListCurso(
+    Guid Id,
     string Nombre,
     string? NombrePrerrequisito,
     int Creditos,

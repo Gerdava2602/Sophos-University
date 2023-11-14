@@ -34,6 +34,7 @@ public class AlumnoController : ControllerBase
         }
 
         var listAlumnos = alumnos.Select(alumno => new ListAlumno(
+            alumno.Id,
             alumno.Nombre,
             _context.Facultades.Find(alumno.FacultadId)?.Nombre,
             _context.CursoAlumnos.Where(ca => ca.AlumnoId == alumno.Id).Sum(ca => ca.Curso.Creditos)
@@ -80,6 +81,69 @@ public class AlumnoController : ControllerBase
         }
     }
 
+    [HttpPost("{alumno_id}/matricula/{curso_id}")]
+    public async Task<ActionResult<string>> MatriculaAlumno(Guid alumno_id, Guid curso_id)
+    {
+        var alumno = _context.Alumnos.Find(alumno_id);
+        var curso = _context.Cursos.Find(curso_id);
+
+        if (alumno == null)
+        {
+            return NotFound("Alumno no encontrado");
+        }
+        if (curso == null)
+        {
+            return NotFound("Curso no encontrado");
+        }
+        //Look for previous relationships
+        var previous = _context.CursoAlumnos.Where(ca => ca.AlumnoId == alumno_id && ca.CursoId == curso_id).ToList();
+        if (previous.Count == 0)
+        {
+            //Check if alumno has passed the prerequisite
+            var prerequisite = _context.CursoAlumnos.Where(ca => ca.AlumnoId == alumno_id && ca.CursoId == curso.PreRequisitoId).ToList();
+            if (curso.PreRequisito != null && (prerequisite.Count == 0 || prerequisite[0]?.Estado == Estado.en_curso))
+            {
+                return BadRequest("Prerrequisito no aprobado");
+            }
+            else
+            {
+                var CuposDisponibles = curso.Cupos - _context.CursoAlumnos.Where(ca => ca.CursoId == curso.Id && ca.Estado == Estado.en_curso).Count();
+                if (CuposDisponibles > 0)
+                {
+                    try
+                    {
+                        var matricula = new CursoAlumno
+                        {
+                            AlumnoId = alumno_id,
+                            Alumno = alumno,
+                            CursoId = curso_id,
+                            Curso = curso,
+                            Estado = Estado.en_curso,
+                        };
+
+                        alumno.CursoAlumnos.Add(matricula);
+                        curso.CursoAlumnos.Add(matricula);
+
+                        await _context.AddAsync(matricula);
+                        await _context.SaveChangesAsync();
+                        return CreatedAtAction(nameof(MatriculaAlumno), "Alumno matriculado exitosamente");
+                    }
+                    catch (System.Exception)
+                    {
+                        return StatusCode(500);
+                    }
+                }
+                else
+                {
+                    return BadRequest("Curso sin cupos disponibles");
+                }
+            }
+        }
+        else
+        {
+            return BadRequest("Alumno previamente matriculado");
+        }
+    }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<Alumno>> UpdateAlumno(Guid id, UpdateAlumno alumno)
