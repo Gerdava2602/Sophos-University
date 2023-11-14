@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SophosProject.Models;
 
 namespace SophosProject.DTOs;
 
@@ -11,4 +12,12 @@ public record ListAlumno(
     string Nombre,
     string? Facultad,
     int Creditos
+);
+
+public record GetAlumno(
+    Guid Id,
+    string Nombre,
+    int CreditosInscritos,
+    List<Curso> Cursados,
+    List<Curso> Matriculados
 );

@@ -50,6 +50,36 @@ public class CursoController : ControllerBase
         return CreatedAtAction(nameof(GetCursos), listCursos);
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GetCurso>> GetCurso(Guid id)
+    {
+        var curso = await _context.Cursos.FindAsync(id);
+
+        if (curso == null)
+        {
+            return NotFound();
+        }
+
+        var selected = new GetCurso(
+            curso.Id,
+            curso.Nombre,
+            _context.Profesores.Find(curso.ProfesorId)?.Nombre,
+            curso.Creditos,
+            _context.CursoAlumnos
+            .Where(ca => ca.CursoId == id)
+            .Join(
+                _context.Alumnos,
+                ca => ca.AlumnoId,
+                a => a.Id,
+                (ca, a) => a
+            )
+            .ToList()
+        );
+
+        return CreatedAtAction(nameof(GetCurso), selected);
+
+    }
+
     [HttpPost]
     public async Task<ActionResult<Curso>> CreateCurso(CreateCurso Curso)
     {

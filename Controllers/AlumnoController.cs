@@ -43,6 +43,47 @@ public class AlumnoController : ControllerBase
         return CreatedAtAction(nameof(GetAlumnos), listAlumnos);
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GetAlumno>> GetAlumno(Guid id)
+    {
+        var alumno = await _context.Alumnos.FindAsync(id);
+
+        if (alumno == null)
+        {
+            return NotFound();
+        }
+
+        var matriculados = _context.CursoAlumnos
+            .Where(ca => ca.AlumnoId == id && ca.Estado == Estado.en_curso)
+            .Join(
+                _context.Cursos,
+                ca => ca.CursoId,
+                c => c.Id,
+                (ca, c) => c
+            )
+            .ToList();
+
+        var cursados = _context.CursoAlumnos
+            .Where(ca => ca.AlumnoId == id && ca.Estado == Estado.cursado)
+            .Join(
+                _context.Cursos,
+                ca => ca.CursoId,
+                c => c.Id,
+                (ca, c) => c
+            )
+            .ToList();
+
+        var selected = new GetAlumno(
+            alumno.Id,
+            alumno.Nombre,
+            matriculados.Sum(m => m.Creditos),
+            matriculados,
+            cursados
+        );
+
+        return CreatedAtAction(nameof(GetAlumno), selected);
+    }
+
     [HttpPost]
     public async Task<ActionResult<Alumno>> CreateAlumno(CreateAlumno alumno)
     {
