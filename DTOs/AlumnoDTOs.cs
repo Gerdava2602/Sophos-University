@@ -18,6 +18,6 @@ public record GetAlumno(
     Guid Id,
     string Nombre,
     int CreditosInscritos,
-    List<Curso> Cursados,
-    List<Curso> Matriculados
+    List<Curso> Matriculados,
+    List<Curso> Cursados
 );
