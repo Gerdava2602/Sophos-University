@@ -4,19 +4,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SophosProject.Models;
 
-[Table("CursoAlumno")]
 public class CursoAlumno
 {
-    [Key]
     public Guid Id { get; set; }
-
-    [ForeignKey("CursoId")]
     public Guid CursoId { get; set; }
-    public Curso Curso { get; set; }
-    [ForeignKey("AlumnoId")]
+    public virtual Curso Curso { get; set; }
     public Guid AlumnoId { get; set; }
-    public Alumno Alumno { get; set; }
-    [DefaultValue(Estado.en_curso)]
+    public virtual Alumno Alumno { get; set; }
     public Estado Estado { get; set; }
 }
 

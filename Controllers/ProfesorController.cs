@@ -18,9 +18,22 @@ public class ProfesorController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Profesor>>> GetProfesores()
+    public async Task<ActionResult<IEnumerable<ListProfesor>>> GetProfesores([FromQuery(Name = "name")] string? name)
     {
-        return await _context.Profesores.ToListAsync();
+        var profesores = await _context.Profesores.ToListAsync();
+        //Filters
+        if (name != null)
+        {
+            profesores = profesores.Where(a => a.Nombre.Contains(name)).ToList();
+        }
+
+        var listProfesores = profesores.Select(p => new ListProfesor(
+            p.Nombre,
+            p.Titulo,
+            p.Experiencia,
+            _context.Cursos.Select(curso => curso.Nombre).ToList()
+        ));
+        return CreatedAtAction(nameof(GetProfesores), listProfesores);
     }
 
     [HttpPost]
@@ -30,6 +43,7 @@ public class ProfesorController : ControllerBase
         {
             Nombre = Profesor.Nombre,
             Experiencia = Profesor.Experiencia,
+            Titulo = Profesor.Titulo
         };
         try
         {

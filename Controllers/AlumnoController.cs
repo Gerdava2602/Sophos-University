@@ -18,31 +18,68 @@ public class AlumnoController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Alumno>>> GetAlumnos()
+    public async Task<ActionResult<IEnumerable<ListAlumno>>> GetAlumnos([FromQuery(Name = "name")] string? name, [FromQuery(Name = "facultad")] string? facultad)
     {
-        return await _context.Alumnos.ToListAsync();
+        var alumnos = await _context.Alumnos.ToListAsync();
+
+        //Filters
+        if (name != null)
+        {
+            alumnos = alumnos.Where(a => a.Nombre.Contains(name)).ToList();
+        }
+
+        if (facultad != null)
+        {
+            alumnos = alumnos.Where(a => _context.Facultades.Find(a.FacultadId)?.Nombre == facultad).ToList();
+        }
+
+        var listAlumnos = alumnos.Select(alumno => new ListAlumno(
+            alumno.Nombre,
+            _context.Facultades.Find(alumno.FacultadId)?.Nombre,
+            _context.CursoAlumnos.Where(ca => ca.AlumnoId == alumno.Id).Sum(ca => ca.Curso.Creditos)
+        ));
+
+        return CreatedAtAction(nameof(GetAlumnos), listAlumnos);
     }
 
     [HttpPost]
     public async Task<ActionResult<Alumno>> CreateAlumno(CreateAlumno alumno)
     {
-        var new_alumno = new Alumno
-        {
-            Facultad = alumno.Facultad,
-            Nombre = alumno.Nombre,
-        };
         try
         {
-            await _context.AddAsync(new_alumno);
+            // Create a new Alumno
+            var newAlumno = new Alumno
+            {
+                Nombre = alumno.Nombre,
+                FacultadId = alumno.FacultadId
+            };
+
+
+            // Find the corresponding Facultad and add the new Alumno to its collection
+            var facultad = await _context.Facultades.FindAsync(alumno.FacultadId);
+            if (facultad == null)
+            {
+                // Handle the case where the associated Facultad doesn't exist
+                return NotFound("Facultad not found");
+            }
+
+            // Add the new Alumno to the context
+            _context.Add(newAlumno);
+            facultad.Alumnos.Add(newAlumno);
+
+            // Save changes to the database
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(CreateAlumno), new_alumno);
+
+            // Return the created Alumno
+            return CreatedAtAction(nameof(CreateAlumno), newAlumno);
         }
         catch (System.Exception)
         {
-
+            // Handle exceptions appropriately
             return StatusCode(500);
         }
     }
+
 
     [HttpPut("{id}")]
     public async Task<ActionResult<Alumno>> UpdateAlumno(Guid id, UpdateAlumno alumno)
@@ -54,7 +91,7 @@ public class AlumnoController : ControllerBase
         }
 
         updatedAlumno.Nombre = alumno.Nombre ?? updatedAlumno.Nombre;
-        updatedAlumno.Facultad = alumno.Facultad ?? updatedAlumno.Facultad;
+        updatedAlumno.FacultadId = alumno.FacultadId ?? updatedAlumno.FacultadId;
 
         try
         {

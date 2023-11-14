@@ -18,9 +18,35 @@ public class CursoController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Curso>>> GetCursos()
+    public async Task<ActionResult<IEnumerable<ListCurso>>> GetCursos([FromQuery(Name = "name")] string? name, [FromQuery(Name = "cupos")] bool? cupos)
     {
-        return await _context.Cursos.ToListAsync();
+        var cursos = await _context.Cursos.ToListAsync();
+        //Filters
+        if (name != null)
+        {
+            cursos = cursos.Where(a => a.Nombre.Contains(name)).ToList();
+        }
+
+        if (cupos != null)
+        {
+            if ((bool)cupos)
+            {
+                cursos = cursos.Where(c => c.Creditos > 0).ToList();
+            }
+            else
+            {
+                cursos = cursos.Where(c => c.Creditos == 0).ToList();
+            }
+        }
+
+        var listCursos = cursos.Select(c => new ListCurso(
+            c.Nombre,
+            c.PreRequisito?.Nombre,
+            c.Creditos,
+            c.Cupos - _context.CursoAlumnos.Where(ca => ca.CursoId == c.Id).Count()
+        ));
+
+        return CreatedAtAction(nameof(GetCursos), listCursos);
     }
 
     [HttpPost]
@@ -31,9 +57,26 @@ public class CursoController : ControllerBase
             Nombre = Curso.Nombre,
             Cupos = Curso.Cupos ?? 0,
             Descripcion = Curso.Descripcion,
-            PrerequisitoId = Curso.PrerequisitoId,
-            ProfesorId = Curso.ProfesorId
+            PreRequisitoId = Curso.PrerequisitoId,
+            ProfesorId = Curso.ProfesorId,
+            Creditos = Curso.Creditos ?? 1
         };
+
+        if (Curso.PrerequisitoId != null)
+        {
+            var prerequisito = await _context.Cursos.FindAsync(Curso.PrerequisitoId);
+            if (prerequisito == null)
+            {
+                return NotFound("Prerequisito not found");
+            }
+            prerequisito.CursosSiguientes.Add(new_Curso);
+        }
+        var profesor = await _context.Profesores.FindAsync(Curso.ProfesorId);
+        if (profesor == null)
+        {
+            return NotFound("Profesor not found");
+        }
+        profesor.Cursos.Add(new_Curso);
         try
         {
             await _context.AddAsync(new_Curso);
@@ -58,8 +101,9 @@ public class CursoController : ControllerBase
 
         updatedCurso.Nombre = Curso.Nombre ?? updatedCurso.Nombre;
         updatedCurso.Cupos = Curso.Cupos ?? updatedCurso.Cupos;
+        updatedCurso.Creditos = Curso.Creditos ?? updatedCurso.Creditos;
         updatedCurso.Descripcion = Curso.Descripcion ?? updatedCurso.Descripcion;
-        updatedCurso.PrerequisitoId = Curso.PrerequisitoId ?? updatedCurso.PrerequisitoId;
+        updatedCurso.PreRequisitoId = Curso.PrerequisitoId ?? updatedCurso.PreRequisitoId;
         updatedCurso.ProfesorId = Curso.ProfesorId ?? updatedCurso.ProfesorId;
 
         try

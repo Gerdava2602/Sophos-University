@@ -28,9 +28,9 @@ namespace SophosProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Facultad")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("FacultadId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("FacultadId");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -39,7 +39,9 @@ namespace SophosProject.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Alumno");
+                    b.HasIndex("FacultadId");
+
+                    b.ToTable("Alumno", (string)null);
                 });
 
             modelBuilder.Entity("SophosProject.Models.Curso", b =>
@@ -48,18 +50,26 @@ namespace SophosProject.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("Creditos")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<int>("Cupos")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
-                    b.Property<Guid?>("PrerequisitoId")
+                    b.Property<Guid?>("PreRequisitoId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ProfesorId")
@@ -67,11 +77,11 @@ namespace SophosProject.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PrerequisitoId");
+                    b.HasIndex("PreRequisitoId");
 
                     b.HasIndex("ProfesorId");
 
-                    b.ToTable("Curso");
+                    b.ToTable("Curso", (string)null);
                 });
 
             modelBuilder.Entity("SophosProject.Models.CursoAlumno", b =>
@@ -87,7 +97,9 @@ namespace SophosProject.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("Estado")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
                     b.HasKey("Id");
 
@@ -95,7 +107,23 @@ namespace SophosProject.Migrations
 
                     b.HasIndex("CursoId");
 
-                    b.ToTable("CursoAlumno");
+                    b.ToTable("CursoAlumno", (string)null);
+                });
+
+            modelBuilder.Entity("SophosProject.Models.Facultad", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Facultad", (string)null);
                 });
 
             modelBuilder.Entity("SophosProject.Models.Profesor", b =>
@@ -105,26 +133,41 @@ namespace SophosProject.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("Experiencia")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Profesor");
+                    b.ToTable("Profesor", (string)null);
+                });
+
+            modelBuilder.Entity("SophosProject.Models.Alumno", b =>
+                {
+                    b.HasOne("SophosProject.Models.Facultad", "Facultad")
+                        .WithMany("Alumnos")
+                        .HasForeignKey("FacultadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Facultad");
                 });
 
             modelBuilder.Entity("SophosProject.Models.Curso", b =>
                 {
                     b.HasOne("SophosProject.Models.Curso", "PreRequisito")
                         .WithMany("CursosSiguientes")
-                        .HasForeignKey("PrerequisitoId");
+                        .HasForeignKey("PreRequisitoId");
 
                     b.HasOne("SophosProject.Models.Profesor", "Profesor")
                         .WithMany("Cursos")
@@ -166,6 +209,11 @@ namespace SophosProject.Migrations
                     b.Navigation("CursoAlumnos");
 
                     b.Navigation("CursosSiguientes");
+                });
+
+            modelBuilder.Entity("SophosProject.Models.Facultad", b =>
+                {
+                    b.Navigation("Alumnos");
                 });
 
             modelBuilder.Entity("SophosProject.Models.Profesor", b =>
