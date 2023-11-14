@@ -63,6 +63,8 @@ public class CursoController : ControllerBase
             Creditos = Curso.Creditos ?? 1
         };
 
+        await _context.AddAsync(new_Curso);
+
         if (Curso.PrerequisitoId != null)
         {
             var prerequisito = await _context.Cursos.FindAsync(Curso.PrerequisitoId);
@@ -80,7 +82,6 @@ public class CursoController : ControllerBase
         profesor.Cursos.Add(new_Curso);
         try
         {
-            await _context.AddAsync(new_Curso);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(CreateCurso), new_Curso);
         }

@@ -101,7 +101,8 @@ public class AlumnoController : ControllerBase
         {
             //Check if alumno has passed the prerequisite
             var prerequisite = _context.CursoAlumnos.Where(ca => ca.AlumnoId == alumno_id && ca.CursoId == curso.PreRequisitoId).ToList();
-            if (curso.PreRequisito != null && (prerequisite.Count == 0 || prerequisite[0]?.Estado == Estado.en_curso))
+            System.Console.WriteLine($"{curso.PreRequisitoId}, {prerequisite.Count}");
+            if (curso.PreRequisitoId != null || (prerequisite.Count > 0 && prerequisite[0]?.Estado == Estado.en_curso))
             {
                 return BadRequest("Prerrequisito no aprobado");
             }
