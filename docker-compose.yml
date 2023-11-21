@@ -9,13 +9,18 @@ services:
       - "5189:5189"
     volumes:
       - .:/app
+    networks:
+      - mynetwork
   db:
-    image: postgres:9.6
+    image: postgres:latest
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+    networks:
+      - mynetwork
 
-      
+networks:
+  mynetwork:

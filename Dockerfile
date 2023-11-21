@@ -6,5 +6,10 @@ COPY . .
 # Build and run the application
 RUN dotnet restore
 RUN dotnet build
-EXPOSE 5189
-CMD ["dotnet", "run"]
+
+# Install EF Core Tools
+RUN dotnet tool install --global dotnet-ef --version 7.0.13
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Run database migrations and start the application
+CMD ["sh", "-c", "dotnet ef database update && dotnet run --urls \"http://0.0.0.0:5189\""]
