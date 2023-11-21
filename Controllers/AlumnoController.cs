@@ -17,7 +17,15 @@ public class AlumnoController : ControllerBase
         _context = context;
     }
 
+    /// <summary>
+    /// Get a list of alumnos with optional filtering by name and facultad.
+    /// </summary>
+    /// <param name="name">The name of the alumno to filter by.</param>
+    /// <param name="facultad">The facultad to filter by.</param>
+    /// <returns>A list of alumnos.</returns>
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<ListAlumno>), 200)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<IEnumerable<ListAlumno>>> GetAlumnos([FromQuery(Name = "name")] string? name, [FromQuery(Name = "facultad")] string? facultad)
     {
         var alumnos = await _context.Alumnos.ToListAsync();
@@ -43,7 +51,15 @@ public class AlumnoController : ControllerBase
         return CreatedAtAction(nameof(GetAlumnos), listAlumnos);
     }
 
+    /// <summary>
+    /// Get information about a specific student by ID.
+    /// </summary>
+    /// <param name="id">The ID of the student.</param>
+    /// <returns>An ActionResult containing the student information.</returns>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(GetAlumno), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<GetAlumno>> GetAlumno(Guid id)
     {
         var alumno = await _context.Alumnos.FindAsync(id);
@@ -84,7 +100,15 @@ public class AlumnoController : ControllerBase
         return CreatedAtAction(nameof(GetAlumno), selected);
     }
 
+    /// <summary>
+    /// Create a new student.
+    /// </summary>
+    /// <param name="alumno">The information of the new student to create.</param>
+    /// <returns>An ActionResult containing the created student information.</returns>
     [HttpPost]
+    [ProducesResponseType(typeof(Alumno), 201)]
+    [ProducesResponseType(typeof(string), 404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<Alumno>> CreateAlumno(CreateAlumno alumno)
     {
         try
@@ -122,7 +146,17 @@ public class AlumnoController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Matricula a student for a course.
+    /// </summary>
+    /// <param name="alumno_id">The ID of the student.</param>
+    /// <param name="curso_id">The ID of the course.</param>
+    /// <returns>A string indicating the result of the matriculation process.</returns>
     [HttpPost("{alumno_id}/matricula/{curso_id}")]
+    [ProducesResponseType(typeof(string), 201)]
+    [ProducesResponseType(typeof(string), 400)]
+    [ProducesResponseType(typeof(string), 404)]
+    [ProducesResponseType(typeof(string), 500)]
     public async Task<ActionResult<string>> MatriculaAlumno(Guid alumno_id, Guid curso_id)
     {
         var alumno = _context.Alumnos.Find(alumno_id);
@@ -187,7 +221,16 @@ public class AlumnoController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Update student information.
+    /// </summary>
+    /// <param name="id">The ID of the student to update.</param>
+    /// <param name="alumno">The updated student information.</param>
+    /// <returns>No content if successful, or not found if the student doesn't exist.</returns>
     [HttpPut("{id}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<Alumno>> UpdateAlumno(Guid id, UpdateAlumno alumno)
     {
         var updatedAlumno = await _context.Alumnos.FindAsync(id);
@@ -212,7 +255,15 @@ public class AlumnoController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Delete a student.
+    /// </summary>
+    /// <param name="id">The ID of the student to delete.</param>
+    /// <returns>No content if successful, or not found if the student doesn't exist.</returns>
     [HttpDelete("{id}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<Alumno>> DeleteAlumno(Guid id)
     {
         var alumno = await _context.Alumnos.FindAsync(id);

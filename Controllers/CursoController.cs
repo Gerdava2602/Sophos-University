@@ -17,7 +17,15 @@ public class CursoController : ControllerBase
         _context = context;
     }
 
+    /// <summary>
+    /// Get a list of cursos with optional filtering by name and cupos.
+    /// </summary>
+    /// <param name="name">The name of the curso to filter by.</param>
+    /// <param name="cupos">Filter cursos by cupos availability.</param>
+    /// <returns>A list of cursos.</returns>
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<ListCurso>), 200)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<IEnumerable<ListCurso>>> GetCursos([FromQuery(Name = "name")] string? name, [FromQuery(Name = "cupos")] bool? cupos)
     {
         var cursos = await _context.Cursos.ToListAsync();
@@ -50,7 +58,15 @@ public class CursoController : ControllerBase
         return CreatedAtAction(nameof(GetCursos), listCursos);
     }
 
+    /// <summary>
+    /// Get information about a specific curso by ID.
+    /// </summary>
+    /// <param name="id">The ID of the curso.</param>
+    /// <returns>An ActionResult containing the curso information.</returns>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(GetCurso), 200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<GetCurso>> GetCurso(Guid id)
     {
         var curso = await _context.Cursos.FindAsync(id);
@@ -80,7 +96,15 @@ public class CursoController : ControllerBase
 
     }
 
+    /// <summary>
+    /// Create a new curso.
+    /// </summary>
+    /// <param name="Curso">The information of the new curso to create.</param>
+    /// <returns>An ActionResult containing the created curso information.</returns>
     [HttpPost]
+    [ProducesResponseType(typeof(Curso), 201)]
+    [ProducesResponseType(typeof(string), 404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<Curso>> CreateCurso(CreateCurso Curso)
     {
         var new_Curso = new Curso
@@ -122,7 +146,16 @@ public class CursoController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Update curso information.
+    /// </summary>
+    /// <param name="id">The ID of the curso to update.</param>
+    /// <param name="Curso">The updated curso information.</param>
+    /// <returns>No content if successful, or not found if the curso doesn't exist.</returns>
     [HttpPut("{id}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<Curso>> UpdateCurso(Guid id, UpdateCurso Curso)
     {
         var updatedCurso = await _context.Cursos.FindAsync(id);
@@ -151,7 +184,15 @@ public class CursoController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Delete a curso.
+    /// </summary>
+    /// <param name="id">The ID of the curso to delete.</param>
+    /// <returns>No content if successful, or not found if the curso doesn't exist.</returns>
     [HttpDelete("{id}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<Curso>> DeleteCurso(Guid id)
     {
         var Curso = await _context.Cursos.FindAsync(id);

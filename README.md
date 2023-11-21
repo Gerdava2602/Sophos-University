@@ -39,3 +39,7 @@ docker compose up -d
 ```
 
 Esto creará dos contenedores en docker, una base de datos en postgresql y un servicio backend. Estos van a ser configurados y conectados automáticamente en el proceso de build junto a la creación de los datos de prueba. Para acceder al servicio backend se utilizará el puerto 5189, desde este se podrán acceder a todas las funcionalidades.
+
+## Documento técnico
+
+La documentación técnica fue desarrollada con Swagger UI. Para esta se realizó una configuración y documentación interna para cada endpoint dónde se agregó una descripción detallada, las posibles respuestas y los parámetros necesarios. El documento se encuentra en la ruta `/swagger/index.html`

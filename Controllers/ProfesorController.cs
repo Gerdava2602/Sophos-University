@@ -17,7 +17,14 @@ public class ProfesorController : ControllerBase
         _context = context;
     }
 
+    /// <summary>
+    /// Get a list of profesores with optional filtering by name.
+    /// </summary>
+    /// <param name="name">The name of the profesor to filter by.</param>
+    /// <returns>A list of profesores.</returns>
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<ListProfesor>), 200)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<IEnumerable<ListProfesor>>> GetProfesores([FromQuery(Name = "name")] string? name)
     {
         var profesores = await _context.Profesores.ToListAsync();
@@ -37,7 +44,14 @@ public class ProfesorController : ControllerBase
         return CreatedAtAction(nameof(GetProfesores), listProfesores);
     }
 
+    /// <summary>
+    /// Create a new profesor.
+    /// </summary>
+    /// <param name="Profesor">The information of the new profesor to create.</param>
+    /// <returns>An ActionResult containing the created profesor information.</returns>
     [HttpPost]
+    [ProducesResponseType(typeof(Profesor), 201)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<Profesor>> CreateProfesor(CreateProfesor Profesor)
     {
         var new_Profesor = new Profesor
@@ -59,7 +73,16 @@ public class ProfesorController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Update profesor information.
+    /// </summary>
+    /// <param name="id">The ID of the profesor to update.</param>
+    /// <param name="Profesor">The updated profesor information.</param>
+    /// <returns>No content if successful, or not found if the profesor doesn't exist.</returns>
     [HttpPut("{id}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<Profesor>> UpdateProfesor(Guid id, UpdateProfesor Profesor)
     {
         var updatedProfesor = await _context.Profesores.FindAsync(id);
@@ -85,7 +108,15 @@ public class ProfesorController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Delete a profesor.
+    /// </summary>
+    /// <param name="id">The ID of the profesor to delete.</param>
+    /// <returns>No content if successful, or not found if the profesor doesn't exist.</returns>
     [HttpDelete("{id}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<Profesor>> DeleteProfesor(Guid id)
     {
         var Profesor = await _context.Profesores.FindAsync(id);
