@@ -176,43 +176,43 @@ public class AlumnoController : ControllerBase
         {
             //Check if alumno has passed the prerequisite
             var prerequisite = _context.CursoAlumnos.Where(ca => ca.AlumnoId == alumno_id && ca.CursoId == curso.PreRequisitoId).ToList();
-            System.Console.WriteLine($"{curso.PreRequisitoId}, {prerequisite.Count}");
-            if (curso.PreRequisitoId != null || (prerequisite.Count > 0 && prerequisite[0]?.Estado == Estado.en_curso))
+            if (prerequisite.Count > 0)
             {
-                return BadRequest("Prerrequisito no aprobado");
+                if (prerequisite[0]?.Estado == Estado.en_curso)
+                {
+                    return BadRequest("Prerrequisito no aprobado");
+                }
+
+            }
+            var CuposDisponibles = curso.Cupos - _context.CursoAlumnos.Where(ca => ca.CursoId == curso.Id && ca.Estado == Estado.en_curso).Count();
+            if (CuposDisponibles > 0)
+            {
+                try
+                {
+                    var matricula = new CursoAlumno
+                    {
+                        AlumnoId = alumno_id,
+                        Alumno = alumno,
+                        CursoId = curso_id,
+                        Curso = curso,
+                        Estado = Estado.en_curso,
+                    };
+
+                    alumno.CursoAlumnos.Add(matricula);
+                    curso.CursoAlumnos.Add(matricula);
+
+                    await _context.AddAsync(matricula);
+                    await _context.SaveChangesAsync();
+                    return CreatedAtAction(nameof(MatriculaAlumno), "Alumno matriculado exitosamente");
+                }
+                catch (System.Exception)
+                {
+                    return StatusCode(500);
+                }
             }
             else
             {
-                var CuposDisponibles = curso.Cupos - _context.CursoAlumnos.Where(ca => ca.CursoId == curso.Id && ca.Estado == Estado.en_curso).Count();
-                if (CuposDisponibles > 0)
-                {
-                    try
-                    {
-                        var matricula = new CursoAlumno
-                        {
-                            AlumnoId = alumno_id,
-                            Alumno = alumno,
-                            CursoId = curso_id,
-                            Curso = curso,
-                            Estado = Estado.en_curso,
-                        };
-
-                        alumno.CursoAlumnos.Add(matricula);
-                        curso.CursoAlumnos.Add(matricula);
-
-                        await _context.AddAsync(matricula);
-                        await _context.SaveChangesAsync();
-                        return CreatedAtAction(nameof(MatriculaAlumno), "Alumno matriculado exitosamente");
-                    }
-                    catch (System.Exception)
-                    {
-                        return StatusCode(500);
-                    }
-                }
-                else
-                {
-                    return BadRequest("Curso sin cupos disponibles");
-                }
+                return BadRequest("Curso sin cupos disponibles");
             }
         }
         else

@@ -39,11 +39,11 @@ public class CursoController : ControllerBase
         {
             if ((bool)cupos)
             {
-                cursos = cursos.Where(c => c.Creditos > 0).ToList();
+                cursos = cursos.Where(c => c.Cupos - _context.CursoAlumnos.Where(ca => ca.CursoId == c.Id && ca.Estado == Estado.en_curso).Count() > 0).ToList();
             }
             else
             {
-                cursos = cursos.Where(c => c.Creditos == 0).ToList();
+                cursos = cursos.Where(c => c.Cupos - _context.CursoAlumnos.Where(ca => ca.CursoId == c.Id && ca.Estado == Estado.en_curso).Count() == 0).ToList();
             }
         }
 
@@ -82,7 +82,7 @@ public class CursoController : ControllerBase
             _context.Profesores.Find(curso.ProfesorId)?.Nombre,
             curso.Creditos,
             _context.CursoAlumnos
-            .Where(ca => ca.CursoId == id)
+            .Where(ca => ca.CursoId == id && ca.Estado == Estado.en_curso)
             .Join(
                 _context.Alumnos,
                 ca => ca.AlumnoId,
